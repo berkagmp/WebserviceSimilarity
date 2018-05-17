@@ -1,0 +1,17 @@
+/*
+		 * out.println(tfidf.tfIdf(doc1, documents, doc1.get(c++)));
+		 * out.println(tfidf.tfIdf(doc1, documents, doc1.get(c++)));
+		 * out.println(tfidf.tfIdf(doc1, documents, doc1.get(c++)));
+		 * out.println(tfidf.tfIdf(doc1, documents, doc1.get(c++)));
+		 */
+
+		/*
+		 * stream1.forEach(w -> System.out.println("1: " + tfidf.tfIdf(doc1, documents,
+		 * w))); stream2.forEach(w -> System.out.println("2: " + tfidf.tfIdf(doc2,
+		 * documents, w)));
+		 */
+
+		/*
+		 * double[] d1 = { 1, 1, 1, 1, 1, 0.1, 0.111 }; double[] d2 = { 1, 1, 1, 0,
+		 * 0.333, 1, 1 };
+		 */

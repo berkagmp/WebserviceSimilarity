@@ -1,0 +1,15 @@
+flickr.photos.geo.photosForLocation
+api_key
+format
+lat
+lon
+accuracy
+extras
+per_page
+page
+
+
+streetviewpublish.photo.get
+Gets the metadata of the specified\nPhoto.\n\nThis method returns the following error codes:\n\n* google.rpc.Code.PERMISSION_DENIED if the requesting user did not\ncreate the requested Photo.\n* google.rpc.Code.NOT_FOUND if the requested\nPhoto does not exist.\n* google.rpc.Code.UNAVAILABLE if the requested\nPhoto is still being indexed.
+photoId
+view
