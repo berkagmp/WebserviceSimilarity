@@ -13,6 +13,7 @@ import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
 import derek.project.algorithm.DiceCoefficient;
+import derek.project.algorithm.RemovalStopwords;
 import derek.project.algorithm.TFIDF;
 import derek.project.algorithm.WordNet;
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
@@ -34,7 +35,7 @@ public class StringSimilarity {
 	
 	private static final int DICE = 0;
 	private static final int JACCARD = 1;
-
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String[] str1 = { "lat", "latitude" };
@@ -60,15 +61,19 @@ public class StringSimilarity {
 		TFIDF tfidf = new TFIDF();
 		String[] strarr1 = {"flickr","photos","geo","photos", "For", "Location", "Return","list","photos","call","user","specific","latitude","longitude","accuracy","api_key","format","lat","lon","accuracy","extras","per_page","page"}; 
 		String[] strarr2 = {"street", "view", "publish","photo","get","photoId","view","Get","metadata","specify","Photo","method","return","following","error","codes"};
-		
+		strarr1 = strarr2;
 		List<String> doc1 = Arrays.asList(strarr1);
 		List<String> doc2 = Arrays.asList(strarr2);
+		doc1.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+		doc2.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 		
 		// Stemming
 		strarr1 = stemmingForArr(strarr1);
 		strarr2 = stemmingForArr(strarr2);
 		List<String> doc1WithStemming = Arrays.asList(strarr1);
 		List<String> doc2WithStemming = Arrays.asList(strarr2);
+		doc1WithStemming.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+		doc2WithStemming.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 		
 		// Ordering
 		Descending descending = new Descending();

@@ -21,6 +21,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import derek.project.algorithm.RemovalStopwords;
 import derek.project.config.AppConfig;
 import derek.project.dao.ApiMethodDao;
 import derek.project.dao.RequestParameterDao;
@@ -79,6 +80,7 @@ public class DocumentGroup {
 			if (arr.length > 1) {
 				temp = new ArrayList<>(Arrays.asList(arr));
 				temp.removeIf(p);
+				temp.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 				
 				data.add(temp);
 			}
@@ -90,6 +92,8 @@ public class DocumentGroup {
 			if (arr.length > 1) {
 				temp = new ArrayList<>(Arrays.asList(arr));
 				temp.removeIf(p);
+				temp.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+				
 				data.add(temp);
 			}
 		}

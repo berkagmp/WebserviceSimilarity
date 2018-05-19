@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import derek.project.algorithm.RemovalStopwords;
+
 public class Test {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String str = "<I> aMd a 	^&* )( boy Freind $ #?$";
+		String str = "<I> aMd a on for	^&* )( boy Freind $ #?$";
 		str = str.replaceAll("\\W", " ").trim(); // \W : A non-word character
 		
 		while(str.indexOf("  ") > -1) {
@@ -22,16 +24,24 @@ public class Test {
 		System.out.println(str.split("[A-Z]+").length);
 		System.out.println(str.replaceAll("([A-Z])", " $1").toLowerCase());
 		
-		List<String> list = new ArrayList<>(Arrays.asList(new String[] {"123", "1", "asfdsdf"}));
+		List<String> list = new ArrayList<>(Arrays.asList(new String[] {"123", "1", "asfdsdf", "on", "for", "a"}));
+		System.out.println("\r\nOriginal list");
 		list.forEach(System.out::println);
+		
 		Predicate<String> p = word -> word.length() < 2;
         list.removeIf(w -> w.length() < 2);
+        System.out.println("\r\nAfter removeIf");
+        list.forEach(System.out::println);
+        
+        Predicate<String> ps = word -> RemovalStopwords.stopwordList.contains(word);
+        list.removeIf(ps);
+        System.out.println("\r\nAfter removeIf for stop words");
         list.forEach(System.out::println);
         
         List<List<String>> llist = new ArrayList<List<String>>();
         llist.add(list);
         list = new ArrayList<String>();
-        System.out.println("= List");
+        System.out.println("\r\n= List");
         list.add("MILK");
         list.add("BREAD");
         list.add("BUTTER");
