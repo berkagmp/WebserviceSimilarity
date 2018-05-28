@@ -1,4 +1,4 @@
-package derek.project;
+package derek.project.sample;
 import java.util.Arrays;
 
 import derek.project.algorithm.WordNet;

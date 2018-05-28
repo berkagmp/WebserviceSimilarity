@@ -1,4 +1,4 @@
-package derek.project;
+package derek.project.sample;
 import static java.lang.System.out;
 
 import org.tartarus.snowball.ext.porterStemmer;

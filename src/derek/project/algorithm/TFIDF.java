@@ -39,7 +39,7 @@ public class TFIDF {
 				}
 			}
 		}
-		return Math.log(docs.size() / 1 + n);
+		return Math.log(docs.size() / n);
 	}
 
 	/**

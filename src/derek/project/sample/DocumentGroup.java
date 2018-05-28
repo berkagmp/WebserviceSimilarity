@@ -1,4 +1,4 @@
-package derek.project;
+package derek.project.sample;
 
 import static java.lang.System.out;
 
@@ -34,7 +34,7 @@ public class DocumentGroup {
 	private final static String fileName = "document.csv";
 
 	public static void main(String[] args) {
-		List<List<String>> data = getDocumentGroup(true);
+		List<List<String>> data = getDocumentGroup(true, true);
 		writeDocument(data);
 		// readDocument();
 
@@ -63,15 +63,79 @@ public class DocumentGroup {
 
 		return map;
 	}
+	
+	public static List<String> mergeLists(List<String[]> list){
+		List<String> result = new ArrayList<>();
+		
+		for(String[] arr : list) {
+			result.addAll(tokenisationArray(arr));
+		}
+		
+		return result;
+	}
+	
+	public static List<String> tokenisationArray(String[] str) {
+		List<String> list = new ArrayList<>();		
+		String temp="";
+		
+		for(int i=0; i<str.length; i++) {
+			temp = tokenisation(str[i]);
+			
+			if(temp.split(" ").length > 1) {
+				for(int a=0; a<temp.split(" ").length;a++) {
+					list.add(temp.split(" ")[a]);
+				}
+			}else {
+				list.add(temp);
+			}
+			
+		}
+		
+		return list;
+	}
+	
+	public static String tokenisation(String str) {
+		str = str.replaceAll("POST", "Post")
+				.replaceAll("GET", " get")
+				.replaceAll("PUT", " put")
+				.replaceAll("URL", " url")
+				.replaceAll("POST", " post")
+				.replaceAll("DELETE", " delete")
+				.replaceAll("MMS", " mms")
+				.replaceAll("SMS", " sms")
+				.replaceAll("PROJECT", " project")
+				.replaceAll("ID", " id")
+				.replaceAll("XML", " xml")
+				.replaceAll("JSON", " json")
+				.replaceAll("SSH", " ssh")
+				.replaceAll("UPC", " upc")
+				.replaceAll("ISRC", " isrc")
+				.replaceAll("IP", " ip")
+				.replaceAll("AP", " ap")
+				.replaceAll("API", " api")
+				.replaceAll("PIN", " pin");
+		
+		if(str.split("[A-Z]+").length > 1) {
+			str = str.replaceAll("([A-Z])", " $1").toLowerCase();
+		}
+		
+		str = str.replaceAll("\\W", " ").replaceAll("_", " ").trim();
+		
+		while(str.indexOf("  ") > -1) {
+			str = str.replaceAll("  ", " ");
+		}
+		
+		return str;
+	}
 
 	@SuppressWarnings("unchecked")
-	public static List<List<String>> getDocumentGroup(boolean stemming) {
+	public static List<List<String>> getDocumentGroup(boolean stemming, boolean paramYN) {
 		Map<String, List<?>> map = getDataFromDB();
 
 		List<List<String>> data = new ArrayList<>();
 
 		List<String> temp;
-		Predicate<String> p = word -> word.length() < 2;
+		Predicate<String> p = word -> word.length() < 2 || word.equals("");;
 
 		String[] arr;
 		for (ApiMethod m : (List<ApiMethod>) map.get("ApiMethod")) {
@@ -84,10 +148,8 @@ public class DocumentGroup {
 				
 				data.add(temp);
 			}
-		}
-
-		for (RequestParameter m : (List<RequestParameter>) map.get("RequestParameter")) {
-			arr = Optional.ofNullable(m.getDescription()).orElseGet(() -> " ").split(" ");
+			
+			arr = Optional.ofNullable(m.getMethod()).orElseGet(() -> " ").split(" ");
 
 			if (arr.length > 1) {
 				temp = new ArrayList<>(Arrays.asList(arr));
@@ -95,6 +157,30 @@ public class DocumentGroup {
 				temp.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 				
 				data.add(temp);
+			}
+		}
+
+		if(paramYN) {
+			for (RequestParameter m : (List<RequestParameter>) map.get("RequestParameter")) {
+				/*arr = Optional.ofNullable(m.getDescription()).orElseGet(() -> " ").split(" ");
+	
+				if (arr.length > 1) {
+					temp = new ArrayList<>(Arrays.asList(arr));
+					temp.removeIf(p);
+					temp.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+					
+					data.add(temp);
+				}*/
+				
+				arr = Optional.ofNullable(m.getParam()).orElseGet(() -> " ").split(" ");
+				
+				if (arr.length > 1) {
+					temp = new ArrayList<>(Arrays.asList(arr));
+					temp.removeIf(p);
+					temp.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+					
+					data.add(temp);
+				}
 			}
 		}
 		

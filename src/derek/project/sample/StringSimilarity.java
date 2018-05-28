@@ -1,4 +1,4 @@
-package derek.project;
+package derek.project.sample;
 import static java.lang.System.out;
 
 import java.util.ArrayList;
@@ -59,9 +59,16 @@ public class StringSimilarity {
 		 */
 
 		TFIDF tfidf = new TFIDF();
-		String[] strarr1 = {"flickr","photos","geo","photos", "For", "Location", "Return","list","photos","call","user","specific","latitude","longitude","accuracy","api_key","format","lat","lon","accuracy","extras","per_page","page"}; 
+		/*String[] strarr1 = {"flickr","photos","geo","photos", "For", "Location", "Return","list","photos","call","user","specific","latitude","longitude","accuracy","api_key","format","lat","lon","accuracy","extras","per_page","page"}; 
 		String[] strarr2 = {"street", "view", "publish","photo","get","photoId","view","Get","metadata","specify","Photo","method","return","following","error","codes"};
-		strarr1 = strarr2;
+		strarr1 = strarr2;*/
+		
+		String[] strarr1 = { "flickr", "photos", "geo", "photos", "For", "Location", "Return", "list", "photos", "call",
+				"user", "specific", "latitude", "longitude", "accuracy", "api_key", "format", "lat", "lon", "accuracy",
+				"extras", "per", "page", "page" };
+		String[] strarr2 = { "street", "view", "publish", "photo", "get", "photoId", "view", "Get", "metadata",
+				"specify", "Photo", "method", "return", "following", "error", "codes" };
+		
 		List<String> doc1 = Arrays.asList(strarr1);
 		List<String> doc2 = Arrays.asList(strarr2);
 		doc1.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
@@ -82,7 +89,9 @@ public class StringSimilarity {
 		
 	    // Make standard vector
 		//List<List<String>> documents = Arrays.asList(doc1, doc2);
-		List<List<String>> documents = DocumentGroup.getDocumentGroup(false);
+		List<List<String>> documents = DocumentGroup.getDocumentGroup(false, true);
+		documents.add(doc1);
+		documents.add(doc2);
 		out.println(documents.size());
 				
 		List<String> doc3 = new ArrayList<String>();
@@ -95,7 +104,10 @@ public class StringSimilarity {
 	
         // Make standard vector with Stemming
 		//List<List<String>>  documentsWithStemming = Arrays.asList(doc1WithStemming, doc2WithStemming);
-		List<List<String>>  documentsWithStemming = DocumentGroup.getDocumentGroup(true);
+		List<List<String>>  documentsWithStemming = DocumentGroup.getDocumentGroup(true, true);
+		documentsWithStemming.add(doc1WithStemming);
+		documentsWithStemming.add(doc2WithStemming);
+		
 		List<String> doc3WithStemming = new ArrayList<String>();
 		doc3WithStemming.addAll(doc1WithStemming);
 		doc3WithStemming.addAll(doc2WithStemming);
@@ -215,14 +227,11 @@ public class StringSimilarity {
 			temp = 0;
 
 			for (int k = 0; k < doc1.size(); k++) {
-				//out.println(s1 + "/" + doc1.get(k));
 				if (s1.equals(doc1.get(k))) {
 					temp = (tfidfYn) ? tfidf[k] : 1;
 					break;
 				} else {
 					for (int w = 0; w < rcs.length; w++) {
-						//wordnet = wn.cal(rcs[w], s1, doc1.get(k));
-						
 						if(syntax == DICE) {
 							wordnet = (wn.calByMax(rcs[w], s1, doc1.get(k)) * 0.7) + (diceCoefficient.diceCoefficientOptimized(s1, doc1.get(k)) * 0.3);
 						}else if(syntax == JACCARD){
@@ -234,12 +243,10 @@ public class StringSimilarity {
 						}
 					}
 
-					//out.println("temp-" + temp);
 					if (k == doc1.size() - 1)
 						temp *= (tfidfYn) ? tfidf[k] : 1;
 				}
 			}
-			//out.println();
 			result[i++] = temp;
 		}
 

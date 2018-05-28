@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class DiceCoefficient {
 	// Note that this implementation is case-sensitive!
-	public static double diceCoefficient(String s1, String s2) {
+	public double diceCoefficient(String s1, String s2) {
 		Set<String> nx = new HashSet<String>();
 		Set<String> ny = new HashSet<String>();
 
@@ -53,7 +53,7 @@ public class DiceCoefficient {
 	 *         both of the strings contain less than 2 characters and are not equal.
 	 * @author Jelle Fresen
 	 */
-	public static double diceCoefficientOptimized(String s, String t) {
+	public double diceCoefficientOptimized(String s, String t) {
 		// Verifying the input:
 		if (s == null || t == null)
 			return 0;

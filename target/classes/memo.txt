@@ -15,3 +15,62 @@
 		 * double[] d1 = { 1, 1, 1, 1, 1, 0.1, 0.111 }; double[] d2 = { 1, 1, 1, 0,
 		 * 0.333, 1, 1 };
 		 */
+		 
+		 
+tfidfYn = false;
+		double[] d1J = getVector(doc1, doc3, v1, tfidfYn, JACCARD);
+		double[] d2J = getVector(doc2, doc3, v2, tfidfYn, JACCARD);
+		double[] d1WithStemmingJ = getVector(doc1WithStemming, doc3WithStemming, v1WithStemming, tfidfYn, JACCARD);
+		double[] d2WithStemmingJ = getVector(doc2WithStemming, doc3WithStemming, v2WithStemming, tfidfYn, JACCARD);
+		
+		double[] d1D = getVector(doc1, doc3, v1, tfidfYn, DICE);
+		double[] d2D = getVector(doc2, doc3, v2, tfidfYn, DICE);
+		double[] d1WithStemmingD = getVector(doc1WithStemming, doc3WithStemming, v1WithStemming, tfidfYn, DICE);
+		double[] d2WithStemmingD = getVector(doc2WithStemming, doc3WithStemming, v2WithStemming, tfidfYn, DICE);
+
+		out.println("Vectors with JACCARD after stemming");
+		out.println(Arrays.toString(d1WithStemmingJ));
+		out.println(Arrays.toString(d2WithStemmingJ));
+		out.println("Vectors with DICE after stemming");
+		out.println(Arrays.toString(d1WithStemmingD));
+		out.println(Arrays.toString(d2WithStemmingD));
+		out.println("Vectors with JACCARD");
+		out.println(Arrays.toString(d1J));
+		out.println(Arrays.toString(d2J));
+		out.println("Vectors with DICE");
+		out.println(Arrays.toString(d1D));
+		out.println(Arrays.toString(d2D));
+
+		out.println();
+		/*out.println(" Cosine JACCARD after stemming: " + cosineSimilarity(d1WithStemmingJ, d2WithStemmingJ));
+		out.println(" Cosine DICE after stemming: " + cosineSimilarity(d1WithStemmingD, d2WithStemmingD));
+		out.println(" Cosine JACCARD: " + cosineSimilarity(d1J, d2J));
+		out.println(" Cosine DICE: " + cosineSimilarity(d1D, d2D));*/
+		
+		resultMap.put(" Cosine JACCARD", cosineSimilarity(d1J, d2J));
+		resultMap.put(" Cosine DICE", cosineSimilarity(d1D, d2D));
+		resultMap.put(" Cosine JACCARD after stemming", cosineSimilarity(d1WithStemmingJ, d2WithStemmingJ));
+		resultMap.put(" Cosine DICE after stemming", cosineSimilarity(d1WithStemmingD, d2WithStemmingD));
+	
+		tfidfYn = true;
+		d1J = getVector(doc1, doc3, v1, tfidfYn, JACCARD);
+		d2J = getVector(doc2, doc3, v2, tfidfYn, JACCARD);
+		d1WithStemmingJ = getVector(doc1WithStemming, doc3WithStemming, v1WithStemming, tfidfYn, JACCARD);
+		d2WithStemmingJ = getVector(doc2WithStemming, doc3WithStemming, v2WithStemming, tfidfYn, JACCARD);
+		
+		d1D = getVector(doc1, doc3, v1, tfidfYn, DICE);
+		d2D = getVector(doc2, doc3, v2, tfidfYn, DICE);
+		d1WithStemmingD = getVector(doc1WithStemming, doc3WithStemming, v1WithStemming, tfidfYn, DICE);
+		d2WithStemmingD = getVector(doc2WithStemming, doc3WithStemming, v2WithStemming, tfidfYn, DICE);
+		
+		out.println();
+		/*out.println(" TF-IDF Cosine JACCARD after stemming: " + cosineSimilarity(d1WithStemmingJ, d2WithStemmingJ));
+		out.println(" TF-IDF Cosine DICE after stemming: " + cosineSimilarity(d1WithStemmingD, d2WithStemmingD));
+		out.println(" TF-IDF Cosine JACCARD: " + cosineSimilarity(d1J, d2J));
+		out.println(" TF-IDF Cosine DICE: " + cosineSimilarity(d1D, d2D));*/
+		resultMap.put(" TF-IDF Cosine JACCARD after stemming", cosineSimilarity(d1WithStemmingJ, d2WithStemmingJ));
+		resultMap.put(" TF-IDF Cosine DICE after stemming", cosineSimilarity(d1WithStemmingD, d2WithStemmingD));
+		resultMap.put(" TF-IDF Cosine JACCARD", cosineSimilarity(d1J, d2J));
+		resultMap.put(" TF-IDF Cosine DICE", cosineSimilarity(d1D, d2D));
+		
+		resultList.add(resultMap);		 
