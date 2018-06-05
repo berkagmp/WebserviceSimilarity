@@ -6,14 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-
-import javax.tools.DocumentationTool.DocumentationTask;
 
 import org.apache.commons.text.similarity.JaccardSimilarity;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
@@ -21,27 +18,92 @@ import derek.project.algorithm.DiceCoefficient;
 import derek.project.algorithm.RemovalStopwords;
 import derek.project.algorithm.TFIDF;
 import derek.project.algorithm.WordNet;
-import derek.project.sample.DocumentGroup;
+import derek.project.config.AppConfig;
+import derek.project.dao.ApiMethodDao;
+import derek.project.model.ApiMethod;
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
 
+/**
+ * Main Class for the similarity measurement
+ * @author Derek
+ */
 public class App {
 
+	// WS4J
 	private static WordNet wn = new WordNet();
 	static ILexicalDatabase db = new NictWordNet();
 	private static RelatednessCalculator rcs = new WuPalmer(db);
 
+	// Syntax-based Similarity
 	private static JaccardSimilarity jaccardSimilarity = new JaccardSimilarity();
 	private static DiceCoefficient diceCoefficient = new DiceCoefficient();
-
-	private static SnowballStemmer snowballStemmer = new englishStemmer();
-
 	private static final int DICE = 0;
 	private static final int JACCARD = 1;
+
+	// Stemming library
+	private static SnowballStemmer snowballStemmer = new englishStemmer();
+	
+	private static boolean logging = false; 
 	
 	public static void main(String[] args) {
+		realMeasurement();
+		//SimilarityExperiment();
+	}
+	
+	/**
+	 * Calculate the similarity of two vectors from DB
+	 */
+	public static void realMeasurement() {
+		List<List<String>> d = DocumentGroup.getDocumentGroup(false, false);
+		List<List<String>> ds = DocumentGroup.getDocumentGroup(true, false);
+		
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+		ApiMethodDao apiMethodDao = context.getBean(ApiMethodDao.class);
+		
+		List<ApiMethod> list = apiMethodDao.list();
+		
+		ApiMethod api1; 
+		String[] method1;
+		String[] description1;
+		List<String[]> list1;
+		
+		ApiMethod api2; 
+		String[] method2;
+		String[] description2;
+		List<String[]> list2;
+		
+		for(int i=2500; i<list.size(); i++) {
+			api1 = list.get(i);
+			
+			method1 = api1.getMethod().split(" ");
+			description1 = api1.getMethod().split(" ");
+					
+			list1 = new ArrayList<>();
+			list1.add(method1);
+			list1.add(description1);
+			
+			for(int j=i+1; j<list.size(); j++) {
+				api2 = list.get(j);
+				
+				method2 = api2.getMethod().split(" ");
+				description2 = api2.getMethod().split(" ");
+				
+				list2 = new ArrayList<>();
+				list2.add(method2);
+				list2.add(description2);
+				
+				calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, ds, i, j);
+			}
+		}
+	}
+	
+	/**
+	 * Experimentalise the similarity measurement between some data
+	 */
+	public static void SimilarityExperiment() {
 		// Make arrays
 		String[] resource1 = {"flickr"};
 		String[] method1 = {"flickr","photos","geo","photos","for","location"};
@@ -63,39 +125,55 @@ public class App {
 		String[] description4 = {"get","the","geo","data","latitude","and","longitude","and","the","accuracy","level","for","a","photo"};
 		String[] parameters4 = {"api","key","","rest","","photo","id"};
 		
-		String[] resource5 = {"photoslibrary"};
-		String[] method5 = {"photoslibrary","mediaItems","get"};
-		String[] description5 = {"returns","the","media","item","specified","based","on","a","given","media","item","id"};
-		String[] parameters5 = {"description","required","type","pattern","location"};
-		
 		List<String[]> list1 = new ArrayList<>();
 		List<String[]> list2 = new ArrayList<>();
 		List<String[]> list3 = new ArrayList<>();
 		List<String[]> list4 = new ArrayList<>();
-		List<String[]> list5 = new ArrayList<>();
-		//list1.add(resource1);	list2.add(resource2);	list3.add(resource3);	list4.add(resource4);	list5.add(resource5);
-		list1.add(method1);		list2.add(method2);		list3.add(method3);		list4.add(method4);		list5.add(method5);
-		list1.add(description1);list2.add(description2);list3.add(description3);list4.add(description4);list5.add(description5);
-		//list1.add(parameters1);	list2.add(parameters2);	list3.add(parameters3);	list4.add(parameters4);list5.add(parameters5);
+		//list1.add(resource1);	list2.add(resource2);	list3.add(resource3);	list4.add(resource4);
+		list1.add(method1);		list2.add(method2);		list3.add(method3);		list4.add(method4);
+		list1.add(description1);list2.add(description2);list3.add(description3);list4.add(description4);
+		list1.add(parameters1);	list2.add(parameters2);	list3.add(parameters3);	list4.add(parameters4);
 		
-		//out.println(DocumentGroup.mergeLists(list1));
-		
-		List<List<String>> d = DocumentGroup.getDocumentGroup(false, false);
-		List<List<String>> ds = DocumentGroup.getDocumentGroup(true, false);
+		List<List<String>> d = DocumentGroup.getDocumentGroup(false, true);
+		List<List<String>> ds = DocumentGroup.getDocumentGroup(true, true);
 		
 		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, ds);
 		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list3), d, ds);
 		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list4), d, ds);
-		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list5), d, ds);
-//		calSimilarity(DocumentGroup.mergeLists(list2), DocumentGroup.mergeLists(list5), d, ds);
-//		calSimilarity(DocumentGroup.mergeLists(list2), DocumentGroup.mergeLists(list4), d, ds);
-//		calSimilarity(DocumentGroup.mergeLists(list3), DocumentGroup.mergeLists(list5), d, ds);
-//		calSimilarity(DocumentGroup.mergeLists(list4), DocumentGroup.mergeLists(list5), d, ds);
 	}
 	
-	public static void calSimilarity(List<String> list1, List<String> list2, List<List<String>> d, List<List<String>> ds) {
-		TFIDF tfidf = new TFIDF();
+	/**
+	 * Make a standard vector including two vectors
+	 * @param v1 The first vector
+	 * @param v2 The second vector
+	 * @param sort Descending sort
+	 * @return Vector
+	 */
+	public static List<String> makeStandardVector(List<String> v1, List<String> v2, Descending sort){
+		List<String> vector = new ArrayList<String>();
+		vector.addAll(v1);
+		vector.addAll(v2);
 		
+		// Remove redundancy
+		HashSet<String> hashSet = new HashSet<>(vector);
+		vector = new ArrayList<String>(hashSet);
+
+		// Sorting
+		Collections.sort(vector, sort);
+		
+		return vector;
+	}
+	
+	/**
+	 * Real calculation the similarity with various conditions
+	 * @param list1 The first vector
+	 * @param list2 The second vector
+	 * @param d Document group for IDF
+	 * @param ds Stemmed document group for IDF
+	 * @param i Sequence
+	 * @param j Sequence
+	 */
+	public static void calSimilarity(List<String> list1, List<String> list2, List<List<String>> d, List<List<String>> ds, int i, int j) {
 		// Change array to List
 		List<String> v1 = list1;
 		List<String> v2 = list2;
@@ -104,7 +182,53 @@ public class App {
 		v1.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 		v2.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 
-		// Ordering
+		// Sorting
+		Descending descending = new Descending();
+		Collections.sort(v1, descending);
+		Collections.sort(v2, descending);
+
+		// Make standard vector
+		List<String> v3 = makeStandardVector(v1, v2, descending);
+		
+		// Make document set for TF-IDF
+		d.add(v1);
+		d.add(v2);
+
+		// Make and set TF-IDF array
+		double[] t1 = new double[v1.size()];
+		double[] t2 = new double[v2.size()];
+		int c = 0;
+		for (String w : v1) t1[c++] = TFIDF.tfIdf(v1, d, w);
+		c = 0;
+		for (String w : v2)	t2[c++] = TFIDF.tfIdf(v2, d, w);
+
+		// Make final vectors
+		boolean tfidfYn = true;
+		double semanticRatio = 50;
+		
+		double[] d1 = getVector(v1, v3, t1, tfidfYn, DICE, semanticRatio);
+		double[] d2 = getVector(v2, v3, t2, tfidfYn, DICE, semanticRatio);
+
+		out.format("\n%d/%d \t %f", i, j, cosineSimilarity(d1, d2));
+	}
+	
+	/**
+	 * Experimentalise calculation the similarity with various conditions
+	 * @param list1 The first vector
+	 * @param list2 The second vector
+	 * @param d Document group for IDF
+	 * @param ds Stemmed document group for IDF
+	 */
+	public static void calSimilarity(List<String> list1, List<String> list2, List<List<String>> d, List<List<String>> ds) {
+		// Change array to List
+		List<String> v1 = list1;
+		List<String> v2 = list2;
+
+		// Stop words removal
+		v1.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+		v2.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+
+		// Sorting
 		Descending descending = new Descending();
 		Collections.sort(v1, descending);
 		Collections.sort(v2, descending);
@@ -114,46 +238,29 @@ public class App {
 		List<String> vs2 = stemmingForList(v2);
 
 		// Make standard vector
-		List<String> v3 = new ArrayList<String>();
-		v3.addAll(v1);
-		v3.addAll(v2);
-		// Remove redundancy
-		HashSet<String> hashSet = new HashSet<>(v3);
-		v3 = new ArrayList<String>(hashSet);
-		// Ordering
-		Collections.sort(v3, descending);
-		
+		List<String> v3 = makeStandardVector(v1, v2, descending);
 		// Make stemming standard vector
-		List<String> vs3 = new ArrayList<String>();
-		vs3.addAll(vs1);
-		vs3.addAll(vs2);
-		// Remove redundancy
-		hashSet = new HashSet<>(vs3);
-		vs3 = new ArrayList<String>(hashSet);
-		// Ordering
-		Collections.sort(vs3, descending);
+		List<String> vs3 = makeStandardVector(vs1, vs2, descending);
 
 		// Make document set for TF-IDF
 		d.add(v1);
 		d.add(v2);
-		// List<List<String>> d = Arrays.asList(v1, v2);
-		//out.println(d.size());
 
 		// Make stemming document set for TF-IDF
 		ds.add(vs1);
 		ds.add(vs2);
-		// List<List<String>> ds = Arrays.asList(vs1, vs2);
-		//out.println(ds.size());
 
-		out.println("Vectors without Stemming");
-		out.println(Arrays.toString(v1.toArray()));
-		out.println(Arrays.toString(v2.toArray()));
-		out.println(Arrays.toString(v3.toArray()));
-
-		/*out.println("Vectors with Stemming");
-		out.println(Arrays.toString(vs1.toArray()));
-		out.println(Arrays.toString(vs2.toArray()));
-		out.println(Arrays.toString(vs3.toArray()));*/
+		if(logging) {
+			out.println("Vectors without Stemming");
+			out.println(Arrays.toString(v1.toArray()));
+			out.println(Arrays.toString(v2.toArray()));
+			out.println(Arrays.toString(v3.toArray()));
+	
+			out.println("Vectors with Stemming");
+			out.println(Arrays.toString(vs1.toArray()));
+			out.println(Arrays.toString(vs2.toArray()));
+			out.println(Arrays.toString(vs3.toArray()));
+		}
 
 		// Make TF-IDF array
 		double[] t1 = new double[v1.size()];
@@ -163,79 +270,63 @@ public class App {
 
 		// Set TF-IDF array
 		int c = 0;
-		for (String w : v1)
-			t1[c++] = tfidf.tfIdf(v1, d, w);
+		for (String w : v1) t1[c++] = TFIDF.tfIdf(v1, d, w);
 		c = 0;
-		for (String w : vs1)
-			ts1[c++] = tfidf.tfIdf(vs1, ds, w);
+		for (String w : vs1) ts1[c++] = TFIDF.tfIdf(vs1, ds, w);
 		c = 0;
-		for (String w : v2)
-			t2[c++] = tfidf.tfIdf(v2, d, w);
+		for (String w : v2) t2[c++] = TFIDF.tfIdf(v2, d, w);
 		c = 0;
-		for (String w : vs2)
-			ts2[c++] = tfidf.tfIdf(vs2, ds, w);
+		for (String w : vs2) ts2[c++] = TFIDF.tfIdf(vs2, ds, w);
 
-		/*out.println();
-		out.println("TF-IDF Vector");
-		out.println(Arrays.toString(t1));
-		out.println(Arrays.toString(t2));
-		out.println("TF-IDF Vector after stemming");
-		out.println(Arrays.toString(ts1));
-		out.println(Arrays.toString(ts2));*/
-
-		// Make list for excel
-		List<Map<String, Double>> resultList = new ArrayList<>();
-		Map<String, Double> resultMap;
+		if(logging) {
+			out.println();
+			out.println("TF-IDF Vector");
+			out.println(Arrays.toString(t1));
+			out.println(Arrays.toString(t2));
+			
+			out.println("TF-IDF Vector after stemming");
+			out.println(Arrays.toString(ts1));
+			out.println(Arrays.toString(ts2));
+		}
 
 		// Make final vectors
-		double[] j1;
-		double[] j2;
-		double[] js1;
-		double[] js2;
-		double[] d1;
-		double[] d2;
-		double[] ds1;
-		double[] ds2;
-
+		double[] d1, d2, ds1, ds2;
 		boolean tfidfYn = false;
 
 		for (double semanticRatio = 0; semanticRatio < 110; semanticRatio += 10) {
 
 			tfidfYn = false;
-//			j1 = getVector(v1, v3, t1, tfidfYn, JACCARD, semanticRatio);
-//			j2 = getVector(v2, v3, t2, tfidfYn, JACCARD, semanticRatio);
-//			js1 = getVector(vs1, vs3, ts1, tfidfYn, JACCARD, semanticRatio);
-//			js2 = getVector(vs2, vs3, ts2, tfidfYn, JACCARD, semanticRatio);
 			d1 = getVector(v1, v3, t1, tfidfYn, DICE, semanticRatio);
 			d2 = getVector(v2, v3, t2, tfidfYn, DICE, semanticRatio);
 			ds1 = getVector(vs1, vs3, ts1, tfidfYn, DICE, semanticRatio);
 			ds2 = getVector(vs2, vs3, ts2, tfidfYn, DICE, semanticRatio);
 
 			// Result
-//			out.println(semanticRatio + "\tj\t" + cosineSimilarity(j1, j2));
-			out.println(semanticRatio + "\td\t" + cosineSimilarity(d1, d2));
-//			out.println(semanticRatio + "\tjs\t" + cosineSimilarity(js1, js2));
-			out.println(semanticRatio + "\tds\t" + cosineSimilarity(ds1, ds2));
+			if(logging) {
+				out.println(semanticRatio + "\td\t" + cosineSimilarity(d1, d2));
+				out.println(semanticRatio + "\tds\t" + cosineSimilarity(ds1, ds2));
+			}
 
 			// Make final vectors with TF-IDF
 			tfidfYn = true;
-//			j1 = getVector(v1, v3, t1, tfidfYn, JACCARD, semanticRatio);
-//			j2 = getVector(v2, v3, t2, tfidfYn, JACCARD, semanticRatio);
-//			js1 = getVector(vs1, vs3, ts1, tfidfYn, JACCARD, semanticRatio);
-//			js2 = getVector(vs2, vs3, ts2, tfidfYn, JACCARD, semanticRatio);
 			d1 = getVector(v1, v3, t1, tfidfYn, DICE, semanticRatio);
 			d2 = getVector(v2, v3, t2, tfidfYn, DICE, semanticRatio);
 			ds1 = getVector(vs1, vs3, ts1, tfidfYn, DICE, semanticRatio);
 			ds2 = getVector(vs2, vs3, ts2, tfidfYn, DICE, semanticRatio);
 
 			// Result
-//			out.println(semanticRatio + "\tjt\t" + cosineSimilarity(j1, j2));
-			out.println(semanticRatio + "\tdt\t" + cosineSimilarity(d1, d2));
-//			out.println(semanticRatio + "\tjst\t" + cosineSimilarity(js1, js2));
-			out.println(semanticRatio + "\tdst\t" + cosineSimilarity(ds1, ds2));
+			if(logging) {
+				out.println(semanticRatio + "\tdt\t" + cosineSimilarity(d1, d2));
+				out.println(semanticRatio + "\tdst\t" + cosineSimilarity(ds1, ds2));
+			}
 		}
 	}
 
+	/**
+	 * Stemming method for Array data
+	 * @param args
+	 * @return
+	 */
 	public static String[] stemmingForArr(String[] args) {
 		String[] result = new String[args.length];
 
@@ -248,6 +339,11 @@ public class App {
 		return result;
 	}
 
+	/**
+	 * Stemming method for List data
+	 * @param args
+	 * @return
+	 */
 	public static List<String> stemmingForList(List<String> args) {
 		List<String> result = new ArrayList<String>();
 
@@ -260,6 +356,12 @@ public class App {
 		return result;
 	}
 
+	/**
+	 * Calculate cosine similarity
+	 * @param vectorA The first vector
+	 * @param vectorB The second vector
+	 * @return similarity value (0 ~ 1)
+	 */
 	public static double cosineSimilarity(double[] vectorA, double[] vectorB) {
 		double dotProduct = 0.0;
 		double normA = 0.0;
@@ -273,7 +375,13 @@ public class App {
 
 		return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 	}
-
+	
+	/**
+	 * Make the vector for cosine similarity with syntax and semantic-based similarity and TF-IDF weighing
+	 * @param vectorA The first vector
+	 * @param vectorB The second vector
+	 * @return similarity value (0 ~ 1)
+	 */
 	public static double[] getVector(List<String> doc1, List<String> target, double[] tfidf, boolean tfidfYn, int syntax, double semanticRatio) {
 		final double ratioForSemantic = semanticRatio / 100;
 		final double ratioForSyntax = (100 - semanticRatio) / 100;
@@ -286,19 +394,16 @@ public class App {
 			temp = 0;
 
 			for (int k = 0; k < doc1.size(); k++) {
-				//out.println(s1 + "/" + doc1.get(k));
 				if (s1.equals(doc1.get(k))) {
 					temp = (tfidfYn) ? tfidf[k] : 1;
 					break;
 				} else {
 					for (int w = 0; w < 1; w++) {
-						//wordnet = wn.cal(rcs[w], s1, doc1.get(k));
-						
 						if (syntax == DICE) {
-							value = (wn.calByMax(rcs, s1, doc1.get(k)) * ratioForSemantic)
+							value = (wn.cal(rcs, s1, doc1.get(k)) * ratioForSemantic)
 									+ (diceCoefficient.diceCoefficientOptimized(s1, doc1.get(k)) * ratioForSyntax);
 						} else if (syntax == JACCARD) {
-							value = (wn.calByMax(rcs, s1, doc1.get(k)) * ratioForSemantic)
+							value = (wn.cal(rcs, s1, doc1.get(k)) * ratioForSemantic)
 									+ (jaccardSimilarity.apply(s1, doc1.get(k)) * ratioForSyntax);
 						}
 						
@@ -307,49 +412,16 @@ public class App {
 						}
 					}
 
-					//out.println("temp-" + temp);
 					if (k == doc1.size() - 1)
 						temp *= (tfidfYn) ? tfidf[k] : 1;
 				}
 			}
-			//out.println();
 			result[i++] = temp;
 		}
 
 		return result;
 	}
 	
-	public static double[] getVector_old(List<String> v1, List<String> target, double[] tfidf, boolean tfidfYn, int syntax,
-			double semanticRatio) {
-		final double ratioForSemantic = semanticRatio / 100;
-		final double ratioForSyntax = (100 - semanticRatio) / 100;
-
-		double[] result = new double[target.size()];
-		int i = 0;
-		double value = 0;
-
-		for (String s1 : target) {
-			for (int k = 0; k < v1.size(); k++) {
-				if (s1.equals(v1.get(k))) {
-					value = (tfidfYn) ? tfidf[k] : 1;
-					break;
-				} else {
-					if (syntax == DICE) {
-						value = (wn.calByMax(rcs, s1, v1.get(k)) * ratioForSemantic)
-								+ (diceCoefficient.diceCoefficientOptimized(s1, v1.get(k)) * ratioForSyntax);
-					} else if (syntax == JACCARD) {
-						value = (wn.calByMax(rcs, s1, v1.get(k)) * ratioForSemantic)
-								+ (jaccardSimilarity.apply(s1, v1.get(k)) * ratioForSyntax);
-					}
-
-				}
-			}
-			result[i++] = value;
-		}
-
-		return result;
-	}
-
 }
 
 class Descending implements Comparator<String> {

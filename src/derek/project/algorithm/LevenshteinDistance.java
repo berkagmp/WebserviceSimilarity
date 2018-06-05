@@ -1,5 +1,9 @@
 package derek.project.algorithm;
 
+/**
+ * From wikibooks
+ * https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
+ */
 public class LevenshteinDistance {
 	public int levenshteinDistance(CharSequence lhs, CharSequence rhs) {
 		int len0 = lhs.length() + 1;

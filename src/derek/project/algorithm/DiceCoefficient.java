@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * From wikibooks
+ * https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Dice%27s_coefficient
+ */
 public class DiceCoefficient {
 	// Note that this implementation is case-sensitive!
 	public double diceCoefficient(String s1, String s2) {
