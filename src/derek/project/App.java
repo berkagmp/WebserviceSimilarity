@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.text.similarity.JaccardSimilarity;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -46,58 +49,70 @@ public class App {
 	// Stemming library
 	private static SnowballStemmer snowballStemmer = new englishStemmer();
 	
-	private static boolean logging = false; 
+	private static boolean logging = true; 
 	
 	public static void main(String[] args) {
-		realMeasurement();
-		//SimilarityExperiment();
+//		RealMeasurement();
+		SimilarityExperiment();
 	}
 	
 	/**
 	 * Calculate the similarity of two vectors from DB
 	 */
-	public static void realMeasurement() {
+	public static void RealMeasurement() {
 		List<List<String>> d = DocumentGroup.getDocumentGroup(false, false);
-		List<List<String>> ds = DocumentGroup.getDocumentGroup(true, false);
 		
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 		ApiMethodDao apiMethodDao = context.getBean(ApiMethodDao.class);
+		ExcelBuilder excelBuilder = context.getBean(ExcelBuilder.class);
 		
 		List<ApiMethod> list = apiMethodDao.list();
+		out.println(list.size());
 		
-		ApiMethod api1; 
-		String[] method1;
-		String[] description1;
-		List<String[]> list1;
+		List<String[]> list1 = new ArrayList<>();
 		
-		ApiMethod api2; 
+		list1.add(new String[]{"flickr","photos","geo","photos","for","location"});
+		list1.add(new String[]{"return","a","list","of","photos","for","the","calling","user","at","a","specific","latitude","longitude","and","accuracy"});
+		excelBuilder.buildExcel(measure(list1, list, d), "service1");
+		list1.clear();
+		
+		list1.add(new String[]{"flickr","photos","notes","edit"});
+		list1.add(new String[]{"Edit","a","note","on","a","photo.","Coordinates","and","sizes","are","in","pixels,","based","on","the","500px","image","size","shown","on","individual","photo","pages."});
+		excelBuilder.buildExcel(measure(list1, list, d), "service2");
+		list1.clear();
+		
+		list1.add(new String[]{"get", "notebook", "sections"});
+		list1.add(new String[]{"returns","a","collection","of","sections","within","a","specific","notebook"});
+		excelBuilder.buildExcel(measure(list1, list, d), "service3");
+		list1.clear();
+		
+		list1.add(new String[]{"flickr","photos","geo","get", "location"});
+		list1.add(new String[]{"get","the","geo","data","latitude","and","longitude","and","the","accuracy","level","for","a","photo"});
+		excelBuilder.buildExcel(measure(list1, list, d), "service4");
+		
+		context.close();
+	}
+	
+	public static Map<Double, Long> measure(List<String[]> list1, List<ApiMethod> list, List<List<String>> d) {
+		Map<Double, Long> resultList = new HashMap<>();
+		
+		int index = 0;
 		String[] method2;
 		String[] description2;
-		List<String[]> list2;
+		List<String[]> list2 = new ArrayList<>();
 		
-		for(int i=2500; i<list.size(); i++) {
-			api1 = list.get(i);
+		for(ApiMethod apiMethod : list) {
+			method2 = apiMethod.getMethod().split(" ");
+			description2 = Optional.ofNullable(apiMethod.getDescription()).orElseGet(() -> " ").split(" ");
 			
-			method1 = api1.getMethod().split(" ");
-			description1 = api1.getMethod().split(" ");
-					
-			list1 = new ArrayList<>();
-			list1.add(method1);
-			list1.add(description1);
+			list2 = new ArrayList<>();
+			list2.add(method2);
+			list2.add(description2);
 			
-			for(int j=i+1; j<list.size(); j++) {
-				api2 = list.get(j);
-				
-				method2 = api2.getMethod().split(" ");
-				description2 = api2.getMethod().split(" ");
-				
-				list2 = new ArrayList<>();
-				list2.add(method2);
-				list2.add(description2);
-				
-				calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, ds, i, j);
-			}
+			resultList.put(calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, index++), apiMethod.getId());
 		}
+		
+		return resultList;
 	}
 	
 	/**
@@ -121,7 +136,7 @@ public class App {
 		String[] parameters3 = {"count","","filter","","orderby","","select","","top","","expand","","skip"};
 		
 		String[] resource4 = {"flickr"};
-		String[] method4 = {"flickr","photos","geo","getlocation"};
+		String[] method4 = {"flickr","photos","geo","get", "location"};
 		String[] description4 = {"get","the","geo","data","latitude","and","longitude","and","the","accuracy","level","for","a","photo"};
 		String[] parameters4 = {"api","key","","rest","","photo","id"};
 		
@@ -129,7 +144,6 @@ public class App {
 		List<String[]> list2 = new ArrayList<>();
 		List<String[]> list3 = new ArrayList<>();
 		List<String[]> list4 = new ArrayList<>();
-		//list1.add(resource1);	list2.add(resource2);	list3.add(resource3);	list4.add(resource4);
 		list1.add(method1);		list2.add(method2);		list3.add(method3);		list4.add(method4);
 		list1.add(description1);list2.add(description2);list3.add(description3);list4.add(description4);
 		list1.add(parameters1);	list2.add(parameters2);	list3.add(parameters3);	list4.add(parameters4);
@@ -137,8 +151,8 @@ public class App {
 		List<List<String>> d = DocumentGroup.getDocumentGroup(false, true);
 		List<List<String>> ds = DocumentGroup.getDocumentGroup(true, true);
 		
-		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, ds);
-		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list3), d, ds);
+//		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list2), d, ds);
+//		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list3), d, ds);
 		calSimilarity(DocumentGroup.mergeLists(list1), DocumentGroup.mergeLists(list4), d, ds);
 	}
 	
@@ -173,19 +187,34 @@ public class App {
 	 * @param i Sequence
 	 * @param j Sequence
 	 */
-	public static void calSimilarity(List<String> list1, List<String> list2, List<List<String>> d, List<List<String>> ds, int i, int j) {
+	public static double calSimilarity(List<String> list1, List<String> list2, List<List<String>> d, int i) {
 		// Change array to List
 		List<String> v1 = list1;
 		List<String> v2 = list2;
+		if(logging) {
+			out.println("Vectors");
+			out.println(Arrays.toString(v1.toArray()));
+			out.println(Arrays.toString(v2.toArray()));
+		}
 
 		// Stop words removal
 		v1.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
 		v2.removeIf(RemovalStopwords.predicateForStopwordsRemoval);
+		if(logging) {
+			out.println("Vectors");
+			out.println(Arrays.toString(v1.toArray()));
+			out.println(Arrays.toString(v2.toArray()));
+		}
 
 		// Sorting
 		Descending descending = new Descending();
 		Collections.sort(v1, descending);
 		Collections.sort(v2, descending);
+		if(logging) {
+			out.println("Vectors");
+			out.println(Arrays.toString(v1.toArray()));
+			out.println(Arrays.toString(v2.toArray()));
+		}
 
 		// Make standard vector
 		List<String> v3 = makeStandardVector(v1, v2, descending);
@@ -208,8 +237,20 @@ public class App {
 		
 		double[] d1 = getVector(v1, v3, t1, tfidfYn, DICE, semanticRatio);
 		double[] d2 = getVector(v2, v3, t2, tfidfYn, DICE, semanticRatio);
+		
+		if(logging) {
+			out.println("TF-IDF Vectors");
+			out.println(Arrays.toString(t1));
+			out.println(Arrays.toString(t2));
+			out.println("Vectors");
+			out.println(Arrays.toString(v1.toArray()));
+			out.println(Arrays.toString(v2.toArray()));
+		}
 
-		out.format("\n%d/%d \t %f", i, j, cosineSimilarity(d1, d2));
+		double result = cosineSimilarity(d1, d2);
+		out.format("\n%d \t %f", i, result);
+		
+		return result;
 	}
 	
 	/**
