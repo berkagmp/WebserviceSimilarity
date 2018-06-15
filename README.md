@@ -17,7 +17,7 @@ snowball-stemmer, commons-text, hibernate-core, mysql-connector-java, spring-orm
 
 <img src="https://github.com/berkagmp/WebserviceSimilarity/blob/master/Picture1.png" alt="Overoll process" width="80%" height="80%" />
 
-The main class is derek.project.App.java which have the main() method.
+The main class is derek.project.App.java which has the main() method.
 
 ### Make a Document Set for TF-IDF Algorithm
 DocumentGroup.java is for creating document groups for IDF of TF-IDF algorithm.
