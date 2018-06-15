@@ -19,23 +19,24 @@ snowball-stemmer, commons-text, hibernate-core, mysql-connector-java, spring-orm
 
 The main class is derek.project.App.java which have the main() method.
 
-## Make a Document Set for TF-IDF Algorithm
+### Make a Document Set for TF-IDF Algorithm
 DocumentGroup.java is for creating document groups for IDF of TF-IDF algorithm.
 It works with or without parameters and stemming process.
 
-## Make Two Vectors from Two Web Services
+### Make Two Vectors from Two Web Services
 - This program adopts the method of "Question Similarity Calculation for FAQ Answering"(Link: https://ieeexplore.ieee.org/document/4438554/).
 - It is possible to adjust Stemming, TF-IDF and the ratio of semantic similarity.
 - Basically, DICE Coefficient for the syntax similarity is used.
 
-## Calculate Cosine Similarity Between Two Vectors
+### Calculate Cosine Similarity Between Two Vectors
 Cosine similarity is well-known for measurement between two vectors. (Link: https://en.wikipedia.org/wiki/Cosine_similarity)
 
 # Build and Test
+- SyntaxBasedTest.java is for test of syntax-based similarity.
 - The collecting data and information about database exist in another repository. (Link: https://github.com/berkagmp/ParsingAPIs)
 - App.java has the main() method.
-- RealMeasurement() is for measurement of whole data in database, and the output is XLS file.
-- SimilarityExperiment() is for experiment with various conditions (Stemming, TF-IDF and the ratio of semantic similarity), and the output is printed in console area.
+- RealMeasurement() is for measurement of whole data in a database, and the output is XLS file.
+- SimilarityExperiment() is for experiment with various conditions (Stemming, TF-IDF and the ratio of semantic similarity), and the output is printed in the console area.
 - RUN AS Java application in STS.
 
 # Contribute
