@@ -13,18 +13,22 @@ The aim of this project is for the measurement of similarity between web service
 snowball-stemmer, commons-text, hibernate-core, mysql-connector-java, spring-orm, poi
 
 # Getting Started
-- The main class is derek.project.App.java which have the main() method.
+<img src="https://github.com/berkagmp/WebserviceSimilarity/blob/master/Picture2.png" alt="Overoll process" width="80%" height="80%" />
+
+<img src="https://github.com/berkagmp/WebserviceSimilarity/blob/master/Picture1.png" alt="Overoll process" width="80%" height="80%" />
+
+The main class is derek.project.App.java which have the main() method.
 
 ## Make a Document Set for TF-IDF Algorithm
 DocumentGroup.java is for creating document groups for IDF of TF-IDF algorithm.
 It works with or without parameters and stemming process.
 
-## Make Two Vectors from TwoWeb Services
+## Make Two Vectors from Two Web Services
 - This program adopts the method of "Question Similarity Calculation for FAQ Answering"(Link: https://ieeexplore.ieee.org/document/4438554/).
 - It is possible to adjust Stemming, TF-IDF and the ratio of semantic similarity.
 - Basically, DICE Coefficient for the syntax similarity is used.
 
-## Calculate Cosine Similarity between two vectors
+## Calculate Cosine Similarity Between Two Vectors
 Cosine similarity is well-known for measurement between two vectors. (Link: https://en.wikipedia.org/wiki/Cosine_similarity)
 
 # Build and Test
